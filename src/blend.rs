@@ -7,8 +7,8 @@
 
 // from local crate
 use error::RasterResult;
-use Image;
 use Color;
+use Image;
 
 /// Enumeration for blending modes.
 #[derive(Debug)]
@@ -57,7 +57,7 @@ pub fn difference(
             canvas.set_pixel(
                 canvas_x,
                 canvas_y,
-                &Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
+                Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
             )?;
         }
     }
@@ -102,7 +102,7 @@ pub fn multiply(
             canvas.set_pixel(
                 canvas_x,
                 canvas_y,
-                &Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
+                Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
             )?;
         }
     }
@@ -147,7 +147,7 @@ pub fn normal(
             canvas.set_pixel(
                 canvas_x,
                 canvas_y,
-                &Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
+                Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
             )?;
         }
     }
@@ -192,7 +192,7 @@ pub fn overlay(
             canvas.set_pixel(
                 canvas_x,
                 canvas_y,
-                &Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
+                Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
             )?;
         }
     }
@@ -237,7 +237,7 @@ pub fn screen(
             canvas.set_pixel(
                 canvas_x,
                 canvas_y,
-                &Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
+                Color::rgba(r3 as u8, g3 as u8, b3 as u8, a3 as u8),
             )?;
         }
     }
