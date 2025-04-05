@@ -102,17 +102,11 @@ impl From<png::DecodingError> for RasterError {
             png::DecodingError::Format(_) => {
                 RasterError::Decode(ImageFormat::Png, "Format".to_string())
             }
-            png::DecodingError::InvalidSignature => {
-                RasterError::Decode(ImageFormat::Png, "InvalidSignature".to_string())
+            png::DecodingError::Parameter(_) => {
+                RasterError::Decode(ImageFormat::Png, "Parameter".to_string())
             }
-            png::DecodingError::CrcMismatch { .. } => {
-                RasterError::Decode(ImageFormat::Png, "CrcMismatch".to_string())
-            }
-            png::DecodingError::Other(_) => {
-                RasterError::Decode(ImageFormat::Png, "Other".to_string())
-            }
-            png::DecodingError::CorruptFlateStream => {
-                RasterError::Decode(ImageFormat::Png, "CorruptFlateStream".to_string())
+            png::DecodingError::LimitsExceeded => {
+                RasterError::Decode(ImageFormat::Png, "LimitsExceeded".to_string())
             }
         }
     }
@@ -125,6 +119,12 @@ impl From<png::EncodingError> for RasterError {
             png::EncodingError::IoError(io_err) => RasterError::Io(io_err),
             png::EncodingError::Format(_) => {
                 RasterError::Encode(ImageFormat::Png, "Format".to_string())
+            }
+            png::EncodingError::Parameter(_) => {
+                RasterError::Encode(ImageFormat::Png, "Parameter".to_string())
+            }
+            png::EncodingError::LimitsExceeded => {
+                RasterError::Encode(ImageFormat::Png, "LimitsExceeded".to_string())
             }
         }
     }
