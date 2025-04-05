@@ -7,8 +7,8 @@ use std::cmp;
 
 // from local crate
 use error::{RasterError, RasterResult};
-use Image;
 use Color;
+use Image;
 
 /// An enum for the various modes that can be used for blurring.
 #[derive(Debug)]
@@ -107,7 +107,7 @@ pub fn brightness(src: &mut Image, factor: f32) -> RasterResult<()> {
             // TODO: Should alpha be included?
             let a = cmp::max(0, cmp::min(255, (p.a as f32 * factor) as i32));
 
-            src.set_pixel(x, y, &Color::rgba(r as u8, g as u8, b as u8, a as u8))?;
+            src.set_pixel(x, y, Color::rgba(r as u8, g as u8, b as u8, a as u8))?;
         }
     }
 
@@ -207,7 +207,7 @@ pub fn convolve(src: &mut Image, matrix: [[i32; 3]; 3], divisor: i32) -> RasterR
             src.set_pixel(
                 x,
                 y,
-                &Color::rgba(
+                Color::rgba(
                     accum_red as u8,
                     accum_green as u8,
                     accum_blue as u8,
@@ -307,7 +307,7 @@ fn sobel_both(
             src.set_pixel(
                 x,
                 y,
-                &Color::rgba(pixel as u8, pixel as u8, pixel as u8, pixel_x.a as u8),
+                Color::rgba(pixel as u8, pixel as u8, pixel as u8, pixel_x.a as u8),
             )?;
         }
     }
@@ -351,7 +351,7 @@ pub fn gamma(src: &mut Image, gamma: f32) -> RasterResult<()> {
             let g = (p.g as f32 / 255.0).powf(gamma) * 255.0;
             let b = (p.b as f32 / 255.0).powf(gamma) * 255.0;
 
-            src.set_pixel(x, y, &Color::rgba(r as u8, g as u8, b as u8, p.a as u8))?;
+            src.set_pixel(x, y, Color::rgba(r as u8, g as u8, b as u8, p.a as u8))?;
         }
     }
 
@@ -387,7 +387,7 @@ pub fn grayscale(src: &mut Image) -> RasterResult<()> {
             src.set_pixel(
                 x,
                 y,
-                &Color::rgba(gray as u8, gray as u8, gray as u8, gray as u8),
+                Color::rgba(gray as u8, gray as u8, gray as u8, gray as u8),
             )?;
         }
     }
@@ -436,7 +436,7 @@ pub fn saturation(src: &mut Image, sat: f32) -> RasterResult<()> {
             }
             let rgb = Color::to_rgb(hsv.0, new_s, hsv.2);
 
-            src.set_pixel(x, y, &Color::rgb(rgb.0, rgb.1, rgb.2))?;
+            src.set_pixel(x, y, Color::rgb(rgb.0, rgb.1, rgb.2))?;
         }
     }
 
