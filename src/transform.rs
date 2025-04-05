@@ -6,12 +6,12 @@ use std::cmp;
 // from external crate
 
 // from local crate
+use editor::crop;
 use error::RasterResult;
-use Image;
-use Color;
 use interpolate::{resample, InterpolationMode};
 use position::PositionMode;
-use editor::crop;
+use Color;
+use Image;
 
 /// An enum for the various modes that can be used for transforming.
 #[derive(Debug)]
@@ -70,8 +70,8 @@ pub fn flip(src: &mut Image, mode: TransformMode) -> RasterResult<()> {
                     let pixel_left = src.get_pixel(src_x, y)?;
                     let pixel_right = src.get_pixel(dest_x, y)?;
 
-                    src.set_pixel(dest_x, y, &pixel_left)?;
-                    src.set_pixel(src_x, y, &pixel_right)?;
+                    src.set_pixel(dest_x, y, pixel_left)?;
+                    src.set_pixel(src_x, y, pixel_right)?;
                 }
             }
 
@@ -88,8 +88,8 @@ pub fn flip(src: &mut Image, mode: TransformMode) -> RasterResult<()> {
                     let pixel_top = src.get_pixel(x, src_y)?;
                     let pixel_bottom = src.get_pixel(x, dest_y)?;
 
-                    src.set_pixel(x, dest_y, &pixel_top)?;
-                    src.set_pixel(x, src_y, &pixel_bottom)?;
+                    src.set_pixel(x, dest_y, pixel_top)?;
+                    src.set_pixel(x, src_y, pixel_bottom)?;
                 }
             }
 
@@ -179,9 +179,9 @@ pub fn rotate(src: &mut Image, degree: i32, bg: Color) -> RasterResult<()> {
 
             if point.0 >= 0 && point.0 < w1 && point.1 >= 0 && point.1 < h1 {
                 let pixel = src.get_pixel(point.0, point.1)?;
-                dest.set_pixel(dest_x, dest_y, &pixel)?;
+                dest.set_pixel(dest_x, dest_y, pixel)?;
             } else {
-                dest.set_pixel(dest_x, dest_y, &Color::rgba(bg.r, bg.g, bg.b, bg.a))?;
+                dest.set_pixel(dest_x, dest_y, Color::rgba(bg.r, bg.g, bg.b, bg.a))?;
             }
         }
     }
@@ -247,7 +247,8 @@ pub fn resize_fill(src: &mut Image, w: i32, h: i32) -> RasterResult<()> {
         optimum_width,
         optimum_height,
         InterpolationMode::Bicubic,
-    ).and_then(|_| crop(src, w, h, PositionMode::Center, 0, 0)) // Trim excess parts
+    )
+    .and_then(|_| crop(src, w, h, PositionMode::Center, 0, 0)) // Trim excess parts
 }
 
 /// Resize an image to fit within the given width and height.
