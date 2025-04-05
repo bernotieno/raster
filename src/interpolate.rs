@@ -7,8 +7,8 @@ use std::cmp;
 
 // from local crate
 use error::RasterResult;
-use Image;
 use Color;
+use Image;
 
 /// An enum for the various modes that can be used for interpolation.
 #[derive(Debug)]
@@ -44,7 +44,7 @@ pub fn nearest(src: &mut Image, w: i32, h: i32) -> RasterResult<()> {
             let py: i32 = (y as f64 * y_ratio).floor() as i32;
             let pixel = src.get_pixel(px, py)?;
 
-            dest.set_pixel(x, y, &pixel)?;
+            dest.set_pixel(x, y, pixel)?;
         }
     }
     src.width = dest.width;
@@ -108,7 +108,8 @@ fn bilinear_width(src: &mut Image, w2: i32) -> RasterResult<()> {
             // alpha
             let alpha = _lerp(src_color1.a, src_color2.a, t_x);
 
-            dest.set_pixel(x + offset_x, y, &Color::rgba(red, green, blue, alpha))?;
+            let pixel = Color::rgba(red, green, blue, alpha);
+            dest.set_pixel(x + offset_x, y, pixel)?;
         }
     }
     src.width = dest.width;
@@ -165,7 +166,8 @@ fn bilinear_height(src: &mut Image, h2: i32) -> RasterResult<()> {
             // alpha
             let alpha = _lerp(src_color1.a, src_color2.a, t_y);
 
-            dest.set_pixel(x, y + offset_y, &Color::rgba(red, green, blue, alpha))?;
+            let pixel = Color::rgba(red, green, blue, alpha);
+            dest.set_pixel(x, y + offset_y, pixel)?;
         }
     }
     src.width = dest.width;
@@ -186,6 +188,8 @@ fn _lerp(a: u8, b: u8, t: f64) -> u8 {
 // Linear function using difference
 fn _bilinear(a: u8, b: u8, c: u8, d: u8, x_diff: f64, y_diff: f64) -> u8 {
     // Y = A(1-w)(1-h) + B(w)(1-h) + C(h)(1-w) + Dwh
-    (a as f64 * (1.0 - x_diff) * (1.0 - y_diff) + b as f64 * (x_diff) * (1.0 - y_diff)
-        + c as f64 * (y_diff) * (1.0 - x_diff) + d as f64 * (x_diff * y_diff)) as u8
+    (a as f64 * (1.0 - x_diff) * (1.0 - y_diff)
+        + b as f64 * (x_diff) * (1.0 - y_diff)
+        + c as f64 * (y_diff) * (1.0 - x_diff)
+        + d as f64 * (x_diff * y_diff)) as u8
 }
