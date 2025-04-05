@@ -6,12 +6,12 @@ use std::cmp;
 // from external crate
 
 // from local crate
-use error::{RasterError, RasterResult};
 use blend::{self, BlendMode};
-use Color;
-use Image;
+use error::{RasterError, RasterResult};
 use position::{Position, PositionMode};
 use transform;
+use Color;
+use Image;
 
 /// Blend 2 images into one. The image1 is the base and image2 is the top.
 ///
@@ -251,19 +251,6 @@ pub fn blend(
 /// editor::crop(&mut bottom_left, 167, 93, PositionMode::BottomLeft, 0, 0).unwrap();
 /// editor::crop(&mut bottom_center, 166, 93, PositionMode::BottomCenter, 0, 0).unwrap();
 /// editor::crop(&mut bottom_right, 167, 93, PositionMode::BottomRight, 0, 0).unwrap();
-///
-/// // Save it
-/// raster::save(&top_left, "tests/out/test_crop_top_left.jpg").unwrap();
-/// raster::save(&top_center, "tests/out/test_crop_top_center.jpg").unwrap();
-/// raster::save(&top_right, "tests/out/test_crop_top_right.jpg").unwrap();
-///
-/// raster::save(&center_left, "tests/out/test_crop_center_left.jpg").unwrap();
-/// raster::save(&center, "tests/out/test_crop_center.jpg").unwrap();
-/// raster::save(&center_right, "tests/out/test_crop_center_right.jpg").unwrap();
-///
-/// raster::save(&bottom_left, "tests/out/test_crop_bottom_left.jpg").unwrap();
-/// raster::save(&bottom_center, "tests/out/test_crop_bottom_center.jpg").unwrap();
-/// raster::save(&bottom_right, "tests/out/test_crop_bottom_right.jpg").unwrap();
 /// ```
 ///
 /// ### Output
@@ -283,7 +270,8 @@ pub fn crop(
     // Turn into positioner struct
     let positioner = Position::new(position, offset_x, offset_y);
 
-    let (offset_x, offset_y) = positioner.get_x_y(src.width, src.height, crop_width, crop_height)?;
+    let (offset_x, offset_y) =
+        positioner.get_x_y(src.width, src.height, crop_width, crop_height)?;
     let offset_x = cmp::max(0, offset_x);
     let offset_y = cmp::max(0, offset_y);
 
@@ -302,7 +290,7 @@ pub fn crop(
     for y in 0..dest.height {
         for x in 0..dest.width {
             let pixel = src.get_pixel(offset_x + x, offset_y + y)?;
-            dest.set_pixel(x, y, &Color::rgba(pixel.r, pixel.g, pixel.b, pixel.a))?;
+            dest.set_pixel(x, y, Color::rgba(pixel.r, pixel.g, pixel.b, pixel.a))?;
         }
     }
     src.width = dest.width;
@@ -334,10 +322,9 @@ pub fn crop(
 pub fn fill(src: &mut Image, color: Color) -> RasterResult<()> {
     for y in 0..src.height {
         for x in 0..src.width {
-            src.set_pixel(x, y, &color)?;
+            src.set_pixel(x, y, color.clone())?;
         }
     }
-
     Ok(())
 }
 
