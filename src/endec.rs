@@ -1,9 +1,9 @@
 //!  A module for encoding/decoding.
 
 // from rust
-use std::path::Path;
 use std::fs::File;
 use std::io::BufWriter;
+use std::path::Path;
 
 // from external crate
 use gif;
@@ -60,23 +60,79 @@ pub fn encode_gif(image: &Image, path: &Path) -> RasterResult<()> {
 // Decode PNG
 pub fn decode_png(image_file: &File) -> RasterResult<Image> {
     let decoder = png::Decoder::new(image_file);
-    let (info, mut reader) = decoder.read_info()?;
-    let mut bytes = vec![0; info.buffer_size()];
+    let mut reader = decoder.read_info()?;
+    let mut bytes = vec![0; reader.output_buffer_size()];
 
     reader.next_frame(&mut bytes)?;
+    let info = reader.info();
 
-    if info.color_type == png::ColorType::RGB {
-        // Applies only to RGB
-
-        let mut insert_count = 0;
-        let len = (info.width * info.height) as usize;
-        for i in 0..len {
-            // TODO: This is slow!
-            let insert_pos = 3 * (i + 1) + insert_count;
-            bytes.insert(insert_pos, 255);
-            insert_count += 1;
+    // Handle different color types
+    match info.color_type {
+        png::ColorType::Rgb => {
+            // Convert RGB to RGBA by adding alpha channel
+            let mut rgba_bytes = Vec::with_capacity((info.width * info.height) as usize * 4);
+            for i in 0..(info.width * info.height) as usize {
+                let idx = i * 3;
+                rgba_bytes.extend_from_slice(&bytes[idx..idx + 3]);
+                rgba_bytes.push(255); // Add alpha channel (fully opaque)
+            }
+            bytes = rgba_bytes;
         }
-    } //  TODO other ::ColorType
+        png::ColorType::Grayscale => {
+            // Convert grayscale to RGBA
+            let mut rgba_bytes = Vec::with_capacity((info.width * info.height) as usize * 4);
+            for i in 0..(info.width * info.height) as usize {
+                let gray = bytes[i];
+                rgba_bytes.push(gray);
+                rgba_bytes.push(gray);
+                rgba_bytes.push(gray);
+                rgba_bytes.push(255); // Add alpha channel (fully opaque)
+            }
+            bytes = rgba_bytes;
+        }
+        png::ColorType::GrayscaleAlpha => {
+            // Convert grayscale+alpha to RGBA
+            let mut rgba_bytes = Vec::with_capacity((info.width * info.height) as usize * 4);
+            for i in 0..(info.width * info.height) as usize {
+                let idx = i * 2;
+                let gray = bytes[idx];
+                let alpha = bytes[idx + 1];
+                rgba_bytes.push(gray);
+                rgba_bytes.push(gray);
+                rgba_bytes.push(gray);
+                rgba_bytes.push(alpha);
+            }
+            bytes = rgba_bytes;
+        }
+        png::ColorType::Indexed => {
+            // Convert indexed to RGBA
+            let mut rgba_bytes = Vec::with_capacity((info.width * info.height) as usize * 4);
+            let palette = info.palette.as_ref().ok_or_else(|| {
+                RasterError::Decode(
+                    ImageFormat::Png,
+                    "Missing palette for indexed image".to_string(),
+                )
+            })?;
+
+            for i in 0..(info.width * info.height) as usize {
+                let idx = bytes[i] as usize * 3;
+                if idx + 2 < palette.len() {
+                    rgba_bytes.push(palette[idx]);
+                    rgba_bytes.push(palette[idx + 1]);
+                    rgba_bytes.push(palette[idx + 2]);
+                    rgba_bytes.push(255); // Add alpha channel (fully opaque)
+                } else {
+                    // Handle out of bounds palette index
+                    rgba_bytes.extend_from_slice(&[0, 0, 0, 255]);
+                }
+            }
+            bytes = rgba_bytes;
+        }
+        png::ColorType::Rgba => {
+            // Already in RGBA format, no conversion needed
+        }
+    }
+
     Ok(Image {
         width: info.width as i32,
         height: info.height as i32,
@@ -88,11 +144,13 @@ pub fn decode_png(image_file: &File) -> RasterResult<Image> {
 pub fn encode_png(image: &Image, path: &Path) -> RasterResult<()> {
     // Open the file with basic error check
     let file = File::create(path)?;
-    let ref mut w = BufWriter::new(file);
+    let writer = BufWriter::new(file);
 
-    let mut encoder = png::Encoder::new(w, image.width as u32, image.height as u32);
-    png::HasParameters::set(&mut encoder, png::ColorType::RGBA);
-    png::HasParameters::set(&mut encoder, png::BitDepth::Eight);
+    let mut encoder = png::Encoder::new(writer, image.width as u32, image.height as u32);
+    encoder.set_color(png::ColorType::Rgba);
+    encoder.set_depth(png::BitDepth::Eight);
+
     let mut writer = encoder.write_header()?;
-    Ok(writer.write_image_data(&image.bytes)?)
+    writer.write_image_data(&image.bytes)?;
+    Ok(())
 }
